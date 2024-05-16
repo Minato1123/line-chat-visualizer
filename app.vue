@@ -24,8 +24,9 @@ const memberList = ref<string[]>([])
 const me = ref<string | null>(null)
 
 const isShowDialog = ref(false)
+const isShowHelpDialog = ref(false)
 
-const size = 8
+const size = 5
 let currentIndex = 0
 
 const el = ref<HTMLElement | null>(null)
@@ -99,16 +100,16 @@ function handleDialogConfirm(name: string) {
 <template>
   <div class="h-[100dvh] overflow-hidden flex flex-col items-center py-5">
     <div
-      class="w-full flex justify-center gap-5 h-10"
+      class="w-full flex justify-center gap-3 sm:gap-5 h-10"
     >
       <button
-        class="border-green-600 border-2 rounded-full px-5 py-1 bg-white  hover:bg-green-600 hover:text-white transition-colors duration-400"
+        class="border-green-600 text-green-600 border-2 rounded-full px-5 py-1 bg-white  hover:bg-green-600 hover:text-white transition-colors duration-300"
         @click="open()"
       >
         選擇 LINE 聊天記錄
       </button>
       <button
-        class="border-green-600 border-2 rounded-full px-5 py-1 bg-white transition-colors duration-400"
+        class="border-green-600 text-green-600 border-2 rounded-full px-5 py-1 bg-white transition-colors duration-300"
         :class="{
           'hover:bg-green-600 hover:text-white': files,
           'opacity-40': !files,
@@ -117,6 +118,13 @@ function handleDialogConfirm(name: string) {
         @click="reset()"
       >
         重置
+      </button>
+      <button
+        title="基本說明"
+        class="text-green-600 border-green-600 border-2 bg-transparent hover:text-white hover:bg-green-600 rounded-full w-10 h-10 flex justify-center items-center transition-colors duration-300"
+        @click="isShowHelpDialog = true"
+      >
+        <div class="i-ic:baseline-question-mark w-7 h-7" />
       </button>
     </div>
     <div v-if="messageList" class="w-full grow min-h-0 px-5 flex flex-col">
@@ -195,6 +203,7 @@ function handleDialogConfirm(name: string) {
     @cancel="handleDialogCancel"
     @confirm="handleDialogConfirm"
   />
+  <HelpDialog v-if="isShowHelpDialog" @cancel="isShowHelpDialog = false" />
 </template>
 
 <style scoped>
