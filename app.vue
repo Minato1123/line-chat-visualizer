@@ -74,7 +74,7 @@ function handleDialogConfirm(name: string) {
 <template>
   <div class="h-[100dvh] overflow-hidden flex flex-col items-center py-5">
     <div
-      class="flex gap-5 h-10"
+      class="w-full flex justify-center gap-5 h-10"
     >
       <button
         class="border-green-600 border-2 rounded-full px-5 py-1 bg-white  hover:bg-green-600 hover:text-white transition-colors duration-400"
@@ -99,13 +99,13 @@ function handleDialogConfirm(name: string) {
         {{ content.roomName }}
       </h2>
       <div class="w-full grow min-h-0 flex justify-center">
-        <div class="w-4/5 max-w-240 overflow-y-auto h-full px-5 border-1 rounded-md border-stone-600 relative">
+        <div class="sm:w-4/5 max-w-240 overflow-y-auto h-full px-5 border-1 rounded-md border-stone-600 relative">
           <div
             v-for="theDate in content.messageList"
             :key="theDate.date"
             class="my-5"
           >
-            <div class="flex justify-center sticky top-5">
+            <div class="flex justify-center sticky top-3">
               <div class="bg-gray-200 inline-block px-3 py-1 rounded-2xl text-sm opacity-60">
                 {{ theDate.date }}
               </div>
