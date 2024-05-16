@@ -20,7 +20,7 @@ echo > .nojekyll
 # echo 'www.example.com' > CNAME
 
 git init
-git checkout -B master
+git checkout -B main
 git add -A
 git commit -m 'deploy'
 
@@ -28,6 +28,6 @@ git commit -m 'deploy'
 # git push -f git@github.com:<USERNAME>/<USERNAME>.github.io.git main
 
 # if you are deploying to https://<USERNAME>.github.io/<REPO>
-git push -f https://github.com/Minato1123/taiwan-711-mart-map.git master:gh-pages
+git push -f https://github.com/Minato1123/line-chat-visualizer.git main:gh-pages
 
 cd -
