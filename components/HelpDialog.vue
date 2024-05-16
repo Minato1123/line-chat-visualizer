@@ -11,6 +11,24 @@ defineEmits<{
         <h1 class="flex justify-center text-xl">
           基本說明
         </h1>
+        <div class="mt-3 flex gap-x-5 justify-center">
+          <a
+            class="flex gap-2 items-center rounded-full text-lime-900 transition-colors duration-300 cursor-pointer hover:opacity-80"
+            href="https://github.com/Minato1123/line-chat-visualizer"
+            target="_blank"
+          >
+            <div class="i-octicon:repo-16 h-6 w-6" />
+            Repository
+          </a>
+          <a
+            class="flex gap-2 items-center rounded-full text-lime-900 transition-colors duration-300 cursor-pointer hover:opacity-80"
+            href="https://github.com/Minato1123"
+            target="_blank"
+          >
+            <div class="i-carbon:logo-github h-6 w-6" />
+            Minato1123
+          </a>
+        </div>
         <div class="grow min-h-0 overflow-y-auto flex flex-col gap-y-2">
           <h2 class="text-lg text-green-600 text-600">
             注意事項
