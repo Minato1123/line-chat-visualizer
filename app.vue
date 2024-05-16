@@ -18,14 +18,23 @@ const { files, open, reset, onChange } = useFileDialog({
   multiple: false,
 })
 
-const content = ref<ChatRoom | null>(null)
-const me = ref<string | null>(null)
+const roomName = ref<string | null>(null)
+const messageList = ref<ChatRoom['messageList'] | null>(null)
 const memberList = ref<string[]>([])
+const me = ref<string | null>(null)
 
 const isShowDialog = ref(false)
+
+const size = 8
+let currentIndex = 0
+
+const el = ref<HTMLElement | null>(null)
+const { arrivedState } = useScroll(el)
+
+let ParsedContent: ReturnType<typeof parseMessage>
 onChange((files) => {
   if (files == null) {
-    content.value = null
+    messageList.value = null
     return
   }
 
@@ -40,7 +49,8 @@ onChange((files) => {
   }
 
   theFile.text().then(async (text) => {
-    const ParsedContent = parseMessage(text)
+    ParsedContent = parseMessage(text)
+    roomName.value = ParsedContent.roomName
     me.value = null
 
     if (ParsedContent.members.length === 2) {
@@ -56,8 +66,23 @@ onChange((files) => {
         return
     }
 
-    content.value = ParsedContent
+    messageList.value = ParsedContent.messageList.slice(currentIndex, currentIndex + size)
+    currentIndex += size
   })
+})
+
+const stop = watch(() => arrivedState.bottom, () => {
+  if (arrivedState.bottom === false || messageList.value == null)
+    return
+
+  const nextMessages = ParsedContent.messageList.slice(currentIndex, currentIndex + size)
+  if (nextMessages.length === 0) {
+    stop()
+    return
+  }
+
+  messageList.value.push(...nextMessages)
+  currentIndex += size
 })
 
 function handleDialogCancel() {
@@ -94,14 +119,14 @@ function handleDialogConfirm(name: string) {
         重置
       </button>
     </div>
-    <div v-if="content" class="w-full grow min-h-0 px-5 flex flex-col">
+    <div v-if="messageList" class="w-full grow min-h-0 px-5 flex flex-col">
       <h2 class="text-xl my-3 flex justify-center">
-        {{ content.roomName }}
+        {{ roomName }}
       </h2>
       <div class="w-full grow min-h-0 flex justify-center">
-        <div class="sm:w-4/5 max-w-240 overflow-y-auto h-full px-5 border-1 rounded-md border-stone-600 relative">
+        <div ref="el" class="sm:w-4/5 max-w-240 overflow-y-auto h-full px-5 border-1 rounded-md border-stone-600 relative">
           <div
-            v-for="theDate in content.messageList"
+            v-for="theDate in messageList"
             :key="theDate.date"
             class="my-5"
           >
