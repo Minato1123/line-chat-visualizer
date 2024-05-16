@@ -21,8 +21,8 @@ const filteredList = computed(() => {
 <template>
   <Teleport to="body">
     <div class="absolute top-0 left-0 w-full h-full bg-black/20 flex justify-center items-center">
-      <div class="bg-white h-4/5 w-120 rounded-md border-green-600 border-1 flex flex-col gap-3 p-5">
-        <div class="flex justify-center">
+      <div class="bg-white h-11/12 sm:h-4/5 w-11/12 max-w-120 rounded-md border-green-600 border-1 flex flex-col gap-3 p-5">
+        <div class="flex justify-center text-xl">
           你是誰？
         </div>
         <div>
