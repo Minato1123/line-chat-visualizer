@@ -132,7 +132,7 @@ function handleDialogConfirm(name: string) {
         {{ roomName }}
       </h2>
       <div class="w-full grow min-h-0 flex justify-center">
-        <div ref="el" class="sm:w-4/5 max-w-240 overflow-y-auto h-full px-5 border-1 rounded-md border-stone-600 relative">
+        <div ref="el" class="w-full sm:w-4/5 max-w-240 overflow-y-auto h-full px-5 border-1 rounded-md border-stone-600 relative">
           <div
             v-for="theDate in messageList"
             :key="theDate.date"
