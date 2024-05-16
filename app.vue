@@ -49,8 +49,10 @@ onChange((files) => {
     return
   }
 
+  reset()
   theFile.text().then(async (text) => {
     ParsedContent = parseMessage(text)
+
     roomName.value = ParsedContent.roomName
     me.value = null
 
@@ -67,6 +69,7 @@ onChange((files) => {
         return
     }
 
+    currentIndex = 0
     messageList.value = ParsedContent.messageList.slice(currentIndex, currentIndex + size)
     currentIndex += size
   })
