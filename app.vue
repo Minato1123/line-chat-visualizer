@@ -32,12 +32,13 @@ let currentIndex = 0
 const el = ref<HTMLElement | null>(null)
 const { arrivedState } = useScroll(el)
 
+const isStopLoadMore = ref(false)
+
 let ParsedContent: ReturnType<typeof parseMessage>
 onChange((files) => {
-  if (files == null) {
-    messageList.value = null
+  messageList.value = null
+  if (files == null)
     return
-  }
 
   const theFile = files.item(0)
   if (theFile == null)
@@ -49,7 +50,6 @@ onChange((files) => {
     return
   }
 
-  reset()
   theFile.text().then(async (text) => {
     ParsedContent = parseMessage(text)
 
@@ -70,18 +70,23 @@ onChange((files) => {
     }
 
     currentIndex = 0
+    isStopLoadMore.value = false
     messageList.value = ParsedContent.messageList.slice(currentIndex, currentIndex + size)
     currentIndex += size
+    el.value?.scrollTo({ top: 0 })
   })
 })
 
-const stop = watch(() => arrivedState.bottom, () => {
+watch(() => arrivedState.bottom, () => {
+  if (isStopLoadMore.value)
+    return
+
   if (arrivedState.bottom === false || messageList.value == null)
     return
 
   const nextMessages = ParsedContent.messageList.slice(currentIndex, currentIndex + size)
   if (nextMessages.length === 0) {
-    stop()
+    isStopLoadMore.value = true
     return
   }
 
