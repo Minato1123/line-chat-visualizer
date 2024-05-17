@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { UseVirtualList } from '@vueuse/components'
 import { type ChatRoom, parseMessage } from '~/utils/parseMessage'
 
 const iconMap = {
@@ -19,24 +20,26 @@ const { files, open, reset, onChange } = useFileDialog({
 })
 
 const roomName = ref<string | null>(null)
-const messageList = ref<ChatRoom['messageList'] | null>(null)
+const messageList = ref<ChatRoom['messageList']>([])
 const memberList = ref<string[]>([])
 const me = ref<string | null>(null)
 
 const isShowDialog = ref(false)
 const isShowHelpDialog = ref(false)
 
-const size = 5
-let currentIndex = 0
-
 const el = ref<HTMLElement | null>(null)
-const { arrivedState } = useScroll(el)
 
-const isStopLoadMore = ref(false)
+const heightMap = ref<Map<number, number>>(new Map())
+const { list, containerProps, wrapperProps } = useVirtualList(
+  messageList,
+  {
+    itemHeight: i => heightMap.value.get(i) ?? 22,
+  },
+)
 
 let ParsedContent: ReturnType<typeof parseMessage>
 onChange((files) => {
-  messageList.value = null
+  messageList.value = []
   if (files == null)
     return
 
@@ -69,29 +72,10 @@ onChange((files) => {
         return
     }
 
-    currentIndex = 0
-    isStopLoadMore.value = false
-    messageList.value = ParsedContent.messageList.slice(currentIndex, currentIndex + size)
-    currentIndex += size
+    heightMap.value = new Map()
+    messageList.value = ParsedContent.messageList
     el.value?.scrollTo({ top: 0 })
   })
-})
-
-watch(() => arrivedState.bottom, () => {
-  if (isStopLoadMore.value)
-    return
-
-  if (arrivedState.bottom === false || messageList.value == null)
-    return
-
-  const nextMessages = ParsedContent.messageList.slice(currentIndex, currentIndex + size)
-  if (nextMessages.length === 0) {
-    isStopLoadMore.value = true
-    return
-  }
-
-  messageList.value.push(...nextMessages)
-  currentIndex += size
 })
 
 function handleDialogCancel() {
@@ -135,69 +119,78 @@ function handleDialogConfirm(name: string) {
         <div class="i-ic:baseline-question-mark w-7 h-7" />
       </button>
     </div>
-    <div v-if="messageList" class="w-full grow min-h-0 px-5 flex flex-col">
+    <div v-if="messageList.length > 1" class="w-full grow min-h-0 px-5 flex flex-col">
       <h2 class="text-xl my-3 flex justify-center">
         {{ roomName }}
       </h2>
       <div class="w-full grow min-h-0 flex justify-center">
-        <div ref="el" class="w-full sm:w-4/5 max-w-240 overflow-y-auto h-full px-5 border-1 rounded-md border-stone-600 relative">
-          <div
-            v-for="theDate in messageList"
-            :key="theDate.date"
-            class="my-5"
-          >
-            <div class="flex justify-center sticky top-3">
-              <div class="bg-gray-200 inline-block px-3 py-1 rounded-2xl text-sm opacity-60">
-                {{ theDate.date }}
-              </div>
-            </div>
+        <div v-bind="containerProps" class="w-full sm:w-4/5 max-w-240 h-full overflow-auto px-5 border-1 rounded-md border-stone-600 relative">
+          <div v-bind="wrapperProps">
             <div
-              v-for="(theMsg, i) in theDate.messages"
-              :key="`msg-${i}`"
-              class="my-2"
-              :class="{
-                'flex flex-col items-end ': theMsg.name === me,
+              v-for="{ index, data } in list"
+              :key="`date-${index}`"
+              class="mb-2 flex-col "
+              :style="{
+                height: `${heightMap.get(index)}px`,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
               }"
+              @vue:mounted="(v: any) => heightMap.set(index, v.el.getBoundingClientRect().height)"
             >
-              <div class="px-3 text-sm">
-                {{ theMsg.name }}
+              <div class="flex justify-center sticky top-3">
+                <div class="bg-gray-200 inline-block px-3 py-1 rounded-2xl text-sm opacity-60">
+                  {{ data.date }}
+                </div>
               </div>
               <div
-                class="flex items-end max-w-4/5"
+                v-for="(theMsg, i) in data.messages"
+                :key="`msg-${i}`"
+                class="my-2 w-full"
                 :class="{
-                  'flex-row-reverse': theMsg.name === me,
+                  'flex flex-col items-end ': theMsg.name === me,
                 }"
               >
+                <div class="px-3 text-sm">
+                  {{ theMsg.name }}
+                </div>
                 <div
-                  class="rounded-2xl px-3 py-1 inline-block flex items-center justify-center"
+                  class="flex items-end max-w-4/5"
                   :class="{
-                    'bg-stone-200': theMsg.name !== me,
-                    'bg-lime-200': theMsg.name === me,
-                    'w-16 h-16': theMsg.content.type !== 'text',
+                    'flex-row-reverse': theMsg.name === me,
                   }"
                 >
-                  <span v-if="theMsg.content.type === 'text'" class="break-all" v-html="theMsg.content.message" />
                   <div
-                    v-else-if="theMsg.content.type === 'call'"
-                    class="h-full flex flex-col justify-center items-center gap-1"
+                    class="rounded-2xl px-3 py-1 inline-block flex items-center justify-center"
+                    :class="{
+                      'bg-stone-200': theMsg.name !== me,
+                      'bg-lime-200': theMsg.name === me,
+                      'w-16 h-16': theMsg.content.type !== 'text',
+                    }"
                   >
+                    <span v-if="theMsg.content.type === 'text'" class="break-all" v-html="theMsg.content.message" />
                     <div
-                      :class="iconMap[theMsg.content.type]"
-                      class="text-2xl"
-                    />
-                    <span class="text-sm">
-                      {{ theMsg.content.message }}
-                    </span>
+                      v-else-if="theMsg.content.type === 'call'"
+                      class="h-full flex flex-col justify-center items-center gap-1"
+                    >
+                      <div
+                        :class="iconMap[theMsg.content.type]"
+                        class="text-2xl"
+                      />
+                      <span class="text-sm">
+                        {{ theMsg.content.message }}
+                      </span>
+                    </div>
+                    <div v-else class="h-full flex justify-center items-center">
+                      <div
+                        :class="iconMap[theMsg.content.type]"
+                        class="text-3xl"
+                        :title="theMsg.content.type"
+                      />
+                    </div>
                   </div>
-                  <div v-else class="h-full flex justify-center items-center">
-                    <div
-                      :class="iconMap[theMsg.content.type]"
-                      class="text-3xl"
-                      :title="theMsg.content.type"
-                    />
-                  </div>
+                  <span class="text-xs mx-2">{{ theMsg.time }}</span>
                 </div>
-                <span class="text-xs mx-2">{{ theMsg.time }}</span>
               </div>
             </div>
           </div>
