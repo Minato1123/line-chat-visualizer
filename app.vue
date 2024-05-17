@@ -2,6 +2,10 @@
 import { UseVirtualList } from '@vueuse/components'
 import { type ChatRoom, parseMessage } from '~/utils/parseMessage'
 
+useHead({
+  title: 'LINE 聊天紀錄視覺化工具',
+})
+
 const iconMap = {
   sticker: 'i-solar:sticker-smile-circle-2-outline',
   photo: 'i-material-symbols:image',
